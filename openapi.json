@@ -1,0 +1,939 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Qfrency Text-to-Speech Cloud API",
+    "description": "The Qfrency TTS Cloud API definition and some examples on its usage based on the OpenAPI 3.0 specification.\n\nSome useful links:\n  - Qfrency website [https://www.qfrency.com](https://www.qfrency.com) ",
+    "version": "1.0.0",
+    "license": {
+      "name": "Apache 2.0 (Qfrency Cloud TTS API License)",
+      "url": "http://www.apache.org/licenses/LICENSE-2.0.html",
+      "x-license-details": "uybi8b"
+    },
+    "contact": {
+      "name": "qfrency.com",
+      "email": "info@qfrency.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://tts.qfrency.com/api",
+      "description": "Qfrency TTS cloud API production server."
+    }
+  ],
+  "tags": [
+    {
+      "name": "Versions",
+      "description": "API version information."
+    },
+    {
+      "name": "Voices",
+      "description": "Information about voices available for synthesis.",
+      "externalDocs": {
+        "description": "Find out more",
+        "url": "http://tts.qfrency.com/voices"
+      }
+    },
+    {
+      "name": "Synthesis",
+      "description": "Text-to-speech synthesis operations."
+    },
+    {
+      "name": "Accounts",
+      "description": "Information about API keys and accounts."
+    }
+  ],
+  "paths": {
+    "/v1/api-keys": {
+      "get": {
+        "security": [
+          {
+            "QfrencyTTSAccountKeyAuth": []
+          }
+        ],
+        "tags": [
+          "Accounts"
+        ],
+        "operationId": "listAccountV1",
+        "summary": "List account information",
+        "description": "Get information about the account of the ```AccountID``` used in the authorization of this endpoint.",
+        "responses": {
+          "200": {
+            "description": "Account information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/accountV1"
+                },
+                "example": {
+                  "Account Info": {
+                    "AccountID": "443b5429-e0cd-4ba6-b5bb-100f816ca7b1",
+                    "Name": "Dr. David Bowman",
+                    "Email": "dbowman@csl.illinois.edu",
+                    "CharCountDNN": 42000,
+                    "CharCountHMM": 2010,
+                    "API-Keys": [
+                      "8ed312a7-33dd-4e36-a1f3-dd87d8e82ed3",
+                      "c0c87e6d-ea96-4f75-b98a-97025830bc47",
+                      "77b01d64-416d-477b-8c92-0aabc8314f3e"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 401,
+                    "message": "No X-ACCOUNT-KEY in header"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/api-key/{api-key}": {
+      "get": {
+        "security": [
+          {
+            "QfrencyTTSAccountKeyAuth": []
+          }
+        ],
+        "tags": [
+          "Accounts"
+        ],
+        "operationId": "listApiKeyV1",
+        "summary": "List API key information",
+        "description": "Get information about the given API key.",
+        "parameters": [
+          {
+            "name": "api-key",
+            "in": "path",
+            "description": "The API key for which the information is requested.",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "API-Key information.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/apiKeyV1"
+                },
+                "example": {
+                  "API-Key Info": {
+                    "API-Key": "77b01d64-416d-477b-8c92-0aabc8314f3e",
+                    "Name": "Application 9000",
+                    "CharCountDNN": 2001,
+                    "CharCountHMM": 42
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 400,
+                    "message": "API-key ('c0c87e6d-ea96-4f75-b98a-97025830bc48') not found"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 401,
+                    "message": "No X-ACCOUNT-KEY in header"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 403,
+                    "message": "No right to access this API-Key ('c0c87e6d-ea96-4f75-b98a-97025830bc48') information        "
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/versions": {
+      "get": {
+        "security": [
+          {
+            "QfrencyTTSApiKeyAuth": []
+          }
+        ],
+        "tags": [
+          "Versions"
+        ],
+        "operationId": "listVersions",
+        "summary": "List API versions",
+        "description": "Get a list of version objects.",
+        "responses": {
+          "200": {
+            "description": "A list of version objects.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/versions"
+                },
+                "example": {
+                  "versions": [
+                    {
+                      "id": "v1",
+                      "links": [
+                        {
+                          "href": "http://tts.qfrency.com/api/v1/",
+                          "rel": "self"
+                        }
+                      ],
+                      "status": "CURRENT",
+                      "updated": "2021-02-27T09:18:44Z"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 401,
+                    "message": "No X-API-KEY in header"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/voices": {
+      "get": {
+        "security": [
+          {
+            "QfrencyTTSApiKeyAuth": []
+          }
+        ],
+        "tags": [
+          "Voices"
+        ],
+        "operationId": "voicesV1",
+        "summary": "List of voices",
+        "description": "Get a list of voices, and their attributes,  available for synthesis requests.",
+        "responses": {
+          "200": {
+            "description": "A List of voices and their attributes.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voicesV1"
+                },
+                "example": {
+                  "voices": [
+                    {
+                      "age": "adult",
+                      "country-code": "ZA",
+                      "description": "isiZulu female voice with HMM acoustic models and mixed-excitation vocoder",
+                      "gender": "female",
+                      "lang-code": "zul",
+                      "language": "isizulu",
+                      "name": "Lindiwe",
+                      "sample-rate": 16000,
+                      "technique": "HMM",
+                      "voice-code": "zul-ZA-hmm-lindiwe"
+                    },
+                    {
+                      "age": "adult",
+                      "country-code": "ZA",
+                      "description": "Sepedi male voice with HMM acoustic models and mixed-excitation vocoder",
+                      "gender": "male",
+                      "lang-code": "nso",
+                      "language": "epedi",
+                      "name": "Tshepo",
+                      "sample-rate": 16000,
+                      "technique": "HMM",
+                      "voice-code": "nso-ZA-hmm-tshepo"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 401,
+                    "message": "No X-API-KEY in header"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/voice/{voice-code}": {
+      "get": {
+        "security": [
+          {
+            "QfrencyTTSApiKeyAuth": []
+          }
+        ],
+        "tags": [
+          "Voices"
+        ],
+        "operationId": "voiceV1",
+        "summary": "Voice attributes",
+        "description": "Get the attributes of a specific voice identified by the given voice code.",
+        "parameters": [
+          {
+            "name": "voice-code",
+            "in": "path",
+            "description": "The voice code of the voice for which the attributes are requested.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The attributes of the specific voice.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/voiceV1"
+                },
+                "example": {
+                  "voices": {
+                    "age": "adult",
+                    "country-code": "ZA",
+                    "description": "isiZulu female voice with HMM acoustic models and mixed-excitation vocoder",
+                    "gender": "female",
+                    "lang-code": "zul",
+                    "language": "isizulu",
+                    "name": "Lindiwe",
+                    "sample-rate": 16000,
+                    "technique": "HMM",
+                    "voice-code": "zul-ZA-hmm-lindiwe"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 400,
+                    "message": "No voice found for voice-code 'eng-ZA-dnn-hal'"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 401,
+                    "message": "No X-API-KEY in header"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/synthesize": {
+      "get": {
+        "security": [
+          {
+            "QfrencyTTSApiKeyAuth": []
+          }
+        ],
+        "tags": [
+          "Synthesis"
+        ],
+        "operationId": "synthesizeGetV1",
+        "summary": "Synthesize text",
+        "description": "Synthesize a given text string with a specific voice into speech with the given parameters.",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "voice-code",
+            "in": "query",
+            "description": "The voice code of the voice to be used for synthesis, and by implication the also the language.",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "text",
+            "in": "query",
+            "description": "The text to be synthesized (in the language of the voice).",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sample-rate",
+            "in": "query",
+            "description": "The desired sample-rate of the resulting synthesized speech audio. Each voice has a natural sample-rate, this will then be up- or down-sampled  to the requested rate. The sample-rate must be given in Hertz. If left out then the synthesized audio sample-rate will be at the voice natural sample-rate.",
+            "required": false,
+            "allowEmptyValue": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "integer",
+              "format": "int32",
+              "minimum": 8000,
+              "maximum": 32000,
+              "default": "Voice natural sample-rate"
+            }
+          },
+          {
+            "name": "auto-segmentation",
+            "in": "query",
+            "description": "Automatically split the input text into sentences (if any sentance boundaries are found). Each sentence is then synthesized seperately and the resulting speech audio is concatenated with all the other  sentence's speech audio and returned. Default is `true`. If the  segmentation is wrong then switch this off and synthesize utterances one by one.",
+            "required": false,
+            "allowEmptyValue": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "boolean",
+              "default": true
+            }
+          },
+          {
+            "name": "auto-clean",
+            "in": "query",
+            "description": "Automatically clean the text. This involves many text processing operations to for example remove double new lines, replace escaped new lines etc. This might result in cleaner text for the TTS engine. If your text is from an unknown source then it is a good idea to clean it by making this `true`. Default is `false`.",
+            "required": false,
+            "allowEmptyValue": false,
+            "style": "form",
+            "explode": false,
+            "schema": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The synthesized audio contained in a Base64 encoded WAV file.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/synthesisResponseV1"
+                },
+                "example": {
+                  "wav_64": "UklGRuTzAABXQVZFZm10IBAAAAABAAEAwF0AAIC7AAACABAAZGF0YcDzAADm/+b/m/ /k/+f/7/94\\nAA8A4f/l/6f/PgA5ACQAGgDv/wwA5f9XAOj/0f8eAPD/BQDp/xgAv/ 8eAAgA5/8NAPD/GAADADIA\\nEAABAPb/JgAQACUAIgARACAAGAAGAAMADQAKABMAB wAjABAAIwD7/wYADAAAAAwA+v8AAAAAGgAP\\nAA0ADQD..."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 400,
+                    "message": "No voice found for voice-code 'eng-ZA-dnn-hal'"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 401,
+                    "message": "No X-API-KEY in header"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 403,
+                    "message": "Number of characters on account for given API key have been depletedNo X-API-KEY in header"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 500,
+                    "message": "TTS engine synthesis failed"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "security": [
+          {
+            "QfrencyTTSApiKeyAuth": []
+          }
+        ],
+        "tags": [
+          "Synthesis"
+        ],
+        "operationId": "synthesizePostV1",
+        "summary": "Synthesize text",
+        "description": "Synthesize a given text string with a specific voice  into speech with the given parameters.",
+        "parameters": [
+          {
+            "name": "X-API-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "description": "Synthesize the given text with the given parameters. Note that only ```voice-code``` and ```text``` are required, the other parameters are optional.",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/synthesizeV1"
+              },
+              "example": {
+                "voice-code": "eng-ZA-dnn-hal",
+                "text": "I'm sorry, Dave. I'm afraid I can't do that.",
+                "sample-rate": 16000,
+                "auto-segmentation": true,
+                "auto-clean": false
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The synthesized audio contained in a Base64 encoded WAV file.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/synthesisResponseV1"
+                },
+                "example": {
+                  "wav_64": "UklGRuTzAABXQVZFZm10IBAAAAABAAEAwF0AAIC7AAACABAAZGF0YcDzAADm/+b/m/ /k/+f/7/94\\nAA8A4f/l/6f/PgA5ACQAGgDv/wwA5f9XAOj/0f8eAPD/BQDp/xgAv/ 8eAAgA5/8NAPD/GAADADIA\\nEAABAPb/JgAQACUAIgARACAAGAAGAAMADQAKABMAB wAjABAAIwD7/wYADAAAAAwA+v8AAAAAGgAP\\nAA0ADQD..."
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 400,
+                    "message": "No voice found for voice-code 'eng-ZA-dnn-hal'"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 401,
+                    "message": "No X-API-KEY in header"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 403,
+                    "message": "Number of characters on account for given API key have been depletedNo X-API-KEY in header"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/errorResponseV1"
+                },
+                "example": {
+                  "error": {
+                    "code": 500,
+                    "message": "TTS engine synthesis failed          "
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "versions": {
+        "type": "object",
+        "properties": {
+          "versions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "description": "Version identifier."
+                },
+                "links": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "href": {
+                        "type": "string",
+                        "description": "Version API hypertext reference."
+                      },
+                      "rel": {
+                        "type": "string",
+                        "description": "Relation to 'href'."
+                      }
+                    }
+                  }
+                },
+                "status": {
+                  "type": "string",
+                  "description": "Status of this API."
+                },
+                "updated": {
+                  "type": "string",
+                  "description": "Date and time of the last update of this version in ISO 8601."
+                }
+              }
+            }
+          }
+        }
+      },
+      "voiceV1": {
+        "type": "object",
+        "properties": {
+          "age": {
+            "type": "string",
+            "description": "Age category."
+          },
+          "country-code": {
+            "type": "string",
+            "description": "Voice country code in ISO 3116."
+          },
+          "descriprion": {
+            "type": "string",
+            "description": "High level description of the voice."
+          },
+          "gender": {
+            "type": "string",
+            "description": "Voice gender."
+          },
+          "lang-code": {
+            "type": "string",
+            "description": "Voice language code in ISO 639-2."
+          },
+          "language": {
+            "type": "string",
+            "description": "Voice language as generaly known."
+          },
+          "name": {
+            "type": "string",
+            "description": "The given name of the voice."
+          },
+          "sample-rate": {
+            "type": "integer",
+            "description": "The native sample-rate of the voice, in Hertz."
+          },
+          "technique": {
+            "type": "string",
+            "description": "General voice synthesis technique."
+          },
+          "voice-code": {
+            "type": "string",
+            "description": "Unique code for voice use in API."
+          }
+        }
+      },
+      "voicesV1": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/voiceV1"
+          },
+          {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/voiceV1"
+            }
+          }
+        ]
+      },
+      "accountV1": {
+        "type": "object",
+        "properties": {
+          "Account Info": {
+            "type": "object",
+            "properties": {
+              "AccountID": {
+                "type": "string",
+                "format": "uuid",
+                "description": "The account UUID."
+              },
+              "Name": {
+                "type": "string",
+                "description": "The name of the account."
+              },
+              "Email": {
+                "type": "string",
+                "description": "Email address of the account.",
+                "format": "email"
+              },
+              "CharCountDNN": {
+                "type": "integer",
+                "description": "The number of characters that can be synthesized using DNN voices available on the account."
+              },
+              "CharCountHMM": {
+                "type": "integer",
+                "description": "The number of characters that can be synthesized using HMM voices on the account."
+              },
+              "API-Keys": {
+                "type": "array",
+                "items": {
+                  "type": "string",
+                  "format": "uuid",
+                  "description": "API-Keys associated with this account."
+                }
+              }
+            }
+          }
+        }
+      },
+      "apiKeyV1": {
+        "type": "object",
+        "properties": {
+          "API-Key Info": {
+            "type": "object",
+            "properties": {
+              "API-Key": {
+                "type": "string",
+                "format": "uuid",
+                "description": "The API-Key UUID."
+              },
+              "Name": {
+                "type": "string",
+                "description": "The name of the API key."
+              },
+              "CharCountDNN": {
+                "type": "integer",
+                "description": "The number of characters that can be synthesized using DNN voices available on the API key."
+              },
+              "CharCountHMM": {
+                "type": "integer",
+                "description": "The number of characters that can be synthesized using HMM voices on the API key."
+              }
+            }
+          }
+        }
+      },
+      "synthesisResponseV1": {
+        "type": "object",
+        "properties": {
+          "wav_64": {
+            "type": "string",
+            "description": "The audio from the synthesis process. The audio is contained in a WAV (RIFF) file which has been Base64 encoded for transport. ",
+            "format": "base64"
+          }
+        }
+      },
+      "errorResponseV1": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "code": {
+                "type": "integer",
+                "description": "Error code."
+              },
+              "message": {
+                "type": "string",
+                "description": "Error message."
+              }
+            }
+          }
+        }
+      },
+      "synthesizeV1": {
+        "type": "object",
+        "properties": {
+          "voice-code": {
+            "type": "string",
+            "description": "The voice code of the voice to be used for synthesis, and by implication the also the language."
+          },
+          "text": {
+            "type": "string",
+            "description": "The text to be synthesized (in the language of the voice)."
+          },
+          "sample-rate": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 8000,
+            "maximum": 32000,
+            "default": "Voice natural sample-rate",
+            "description": "The desired sample-rate of the resulting synthesized speech audio. Each voice has a natural sample rate, this will then be up- or down-sampled  to the requested rate. The sample-rate must be given in Hertz. If left out then the synthesized audio sample-rate will be at the voice natural sample-rate."
+          },
+          "auto-segmentation": {
+            "type": "boolean",
+            "default": true,
+            "description": "Automatically split the input text into sentences (if any sentance boundaries are found). Each sentence is then synthesized seperately and the resulting speech audio is concatenated with all the other  sentence's speech audio and returned. Default is `true`. If the  segmentation is wrong then switch this off and synthesize utterances one by one."
+          },
+          "auto-clean": {
+            "type": "boolean",
+            "default": false,
+            "description": "Automatically clean the text. This involves many text processing operations to for example remove double new lines, replace escaped new lines etc. This might result in cleaner text for the TTS engine. If your text is from an unknown source then it is a good idea to clean it by making this `true`. Default is `false`."
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "QfrencyTTSApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-KEY"
+      },
+      "QfrencyTTSAccountKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-ACCOUNT-KEY"
+      }
+    }
+  }
+}
