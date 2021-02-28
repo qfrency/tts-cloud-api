@@ -7,10 +7,12 @@ info:
     # Introduction
     Qfrency is a multilingual Text-to-Speech system which provides both cloud based
     Application Programming Interfaces (API), which is this online service, as well
-    as an Software Development Kit (SDK) for synthesizing text into speech in the
-    South African languages. At the moment the service only provides a synchronous
+    as a Software Development Kit (SDK) for synthesizing text into speech in all 11 
+    official South African languages. At the moment the service only provides a synchronous
     HTTP Representational State Transfer (REST) interface and does not support the
     Speech Synthesis Markup Language (SSML), but that will change soon.
+
+    For more information also see our website at [qfrency.com](https://www.qfency.com).
 
     # Voices
     We currently provide a mixture of Hidden Markov Model (HMM) based voices and
@@ -44,10 +46,10 @@ info:
     | Tshivenda             | Rabelani  | HMM                 | ven-ZA-hmm-rabelani  | Male   | Adult |
     | Xitsonga              | Sasekani  | HMM                 | tso-ZA-hmm-sasekani  | Female | Adult |
 
-    Samples of all the voices can also be generated on the demo page on our website, [https://www.qfrency.com](https://www.qfrency.com).
+    Samples of all the voices can also be generated on the demo page on our website, [https://www.qfrency.com/demo](https://www.qfrency.com/demo).
 
     # Authorization
-    Authorization happens by means of an Account Identifier (`AccountID`) and API keys.
+    Authorization is achieved by means of an Account Identifier (`AccountID`) and API keys.
     A client receives a unique `AccountID` and can request as many API keys as desired.
     Different API keys can for example be used for different projects or applications of the same
     client, thereby having more granular control of the usage.
@@ -70,20 +72,65 @@ info:
 
     `X-ACCOUNT-KEY: 48afa89b-dfd2-4e6d-a346-0b2e2a2c35c3`
 
-    # Audio
+    # Synthesis
+
+    There are currently two REST APIs for synthesis:
+    - [GET https://tts.qfrency.com/api/v1/synthesize](#get-/v1/synthesize), and
+    - [POST https://tts.qfrency.com/api/v1/synthesize](#post-/v1/synthesize)
+
+    The reason for this is that while the `GET` call is a more natural API for TTS, it is limited by the HTTP
+    specification with regards to the size of the header and should not be used for text that is longer
+    than about 1000 characters. For long text the `POST` API must be used.
+
+    ## Audio
     All audio objects are returned in a WAV formatted (https://en.wikipedia.org/wiki/WAV) file which has
     been base64-encoded. The reason for the base64-encoding is that the JSON specification (which is the
     format of all returned objects from this service) does not directly support binary data and therefore
     the binary audio data is first wrapped into a WAV file and then Base64 encoded as a string.
 
     After base64-decoding the string back to binary data it can be written to a file or the WAV header can
-    be stripped (the Qfrency TTS engine always created a header that is 44 bytes long) and the
-    Pulse-code modulation (PCM) data can be converted to a suitable format from it's 16 bits per sample (signed)
-    format.
+    be stripped (the Qfrency TTS engine always creates a header that is 44 bytes long) and the
+    Linear Pulse-code modulation (PCM) data can be converted to another format from it's 16 bits 
+    per sample (signed, little-endian) WAV format if desired.
 
-    # Client implementations
-    The OpenAPI specification for this API is [available](https://raw.githubusercontent.com/qfrency/tts-cloud-api/main/openapi.yaml) and can be used to generate client implementations in various programming
-    languages using OpenAPI generators (we recommend the one here: https://openapi-generator.tech/).
+    ## Sample-rate
+    Each voice has a natural sample-rate for the synthesized speech, which can be found with a call to
+    either [https://tts.qfrency.com/api/v1/voices](#get-/v1/voices) or [https://tts.qfrency.com/api/v1/voices/{voice-code}](#get-/v1/voice/-voice-code-)
+    if you have the voice's identifier (which can be found in the response of the first call or per the [voice table](#overview--voices)).
+
+    If no sample-rate argument is passed to the synthesis calls ([GET https://tts.qfrency.com/api/v1/synthesize](#get-/v1/synthesize)
+    or [POST https://tts.qfrency.com/api/v1/synthesize](#post-/v1/synthesize)) then the returned synthesize
+    audio will be in the voice's natural sample rate. The sample-rate will also be set correctly in the 
+    returned audio WAV header.
+
+    ## Decoding the audio example
+
+    The synthesis APIs return an encoded audio object in a JSON string as follows:
+ 
+    ```json
+    {
+        wav_64: "UklGRuTzAABXQVZFZm10IBAAAAABAAEAwF0AAIC7AAACABAAZGF0YcDzAADm/+b/m/ /k/+f/7/94\nAA8A4f/l/6f/PgA5ACQAGgDv/wwA5f9XAOj/0f8eAPD/BQDp/xgAv/ 8eAAgA5/8NAPD/GAADADIA\nEAABAPb/JgAQACUAIgARACAAGAAGAAMADQAKABMAB wAjABAAIwD7/wYADAAAAAwA+v8AAAAAGgAP\nAA0ADQD..."
+    }
+    ```
+
+    For the sake of the examples the above returned response is saved in a file named "synthesis_response.json".
+    
+    ### Linux 
+    On Linux systems the JSON string can be parsed with various tools and in this example we use **jq**
+    from https://stedolan.github.io/jq/.
+ 
+    First the `wav_64` field is extracted from the string using **jq**, next it as piped to the **base64**
+    utility and decoded and finaly the decoded binary data is written to file:
+
+    ```bash
+    $ jq -r '.wav_64' synthesis_response.json | base64 -d > result.wav
+    ```
+        
+
+    # Client libraries
+    The OpenAPI specification for this API is [available](https://raw.githubusercontent.com/qfrency/tts-cloud-api/main/openapi.yaml) 
+    and can be used to generate client implementations in various programming  languages using OpenAPI 
+    generators (we recommend the one here: https://openapi-generator.tech/).
 
 
 
@@ -91,12 +138,9 @@ info:
   license:
     name: Apache 2.0 (Qfrency Cloud TTS API License)
     url: http://www.apache.org/licenses/LICENSE-2.0.html
-    x-license-details: uybi8b
   contact:
-    name: Information
+    name: Contact
     email: info@qfrency.com
-  x-logo:
-    url: http://localhost/logo.png
 servers:
   - url: https://tts.qfrency.com/api
     description: >-
