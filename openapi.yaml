@@ -12,7 +12,7 @@ info:
     HTTP Representational State Transfer (REST) interface and does not support the
     Speech Synthesis Markup Language (SSML), but that will change soon.
 
-    For more information also see our website at [qfrency.com](https://www.qfency.com).
+    For more information also see our website at [qfrency.com](https://www.qfrency.com).
 
     # Voices
     We currently provide a mixture of Hidden Markov Model (HMM) based voices and
